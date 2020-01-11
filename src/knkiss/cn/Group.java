@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("deprecation")
 public class Group {
+    String path;
     boolean enable = true;
     boolean isReplace = false;
     List<ItemStack> itemOld = new ArrayList<>();
@@ -20,11 +21,21 @@ public class Group {
     String message;
 
     Group(String path){
-        try {
+        this.path = path;
+        try{
             message = AntiLoop.config.getString(path+".message");
+        }catch (Exception e){
+            AntiLoop.log.warning(path+"的组message设置有误，无法开启");
+            enable = false;
+        }
+        try{
             isReplace = AntiLoop.config.getBoolean(path+".settings.isReplace");
+        }catch (Exception e){
+            AntiLoop.log.warning(path+"的组是否替换有误，无法开启");
+            enable = false;
+        }
+        try {
             if(isReplace){
-
                 String pattern = "(.*)-(.*)";
                 Pattern r = Pattern.compile(pattern);
                 Matcher m1 = r.matcher(AntiLoop.config.getString(path+".new"));
@@ -33,6 +44,7 @@ public class Group {
                     int Damage = Integer.parseInt(m1.group(2));
                     itemNew = new ItemStack(ID,1,(short) Damage);
                 }else{
+                    AntiLoop.log.warning(path+"的组开启替换但缺少替换方块，无法开启");
                     enable = false;
                 }
             }
@@ -48,6 +60,7 @@ public class Group {
                 }
             });
         }catch (Exception e){
+            AntiLoop.log.warning(path+"的组方块设置有误，无法开启");
             enable = false;
         }
     }
