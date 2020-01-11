@@ -1,0 +1,8 @@
+name: AntiLoop
+main: knkiss.cn.AntiLoop
+version: "2.0"
+author: Knkiss
+
+permissions:
+  AntiLoop.bypass:
+    default: op
