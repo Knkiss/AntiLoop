@@ -45,6 +45,14 @@ public class AntiLoop extends JavaPlugin implements Listener {
         });
     }
 
+    @EventHandler
+    public void onBreakBlock(BlockBreakEvent e){
+        if(!e.getPlayer().hasPermission("AntiLoop.check"))return;
+        if(!e.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.BOOK))return;
+        e.getPlayer().sendMessage("方块ID:" + e.getBlock().getTypeId()+" 子ID:"+e.getBlock().getData());
+        e.setCancelled(true);
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(label.equalsIgnoreCase("antiloop")){
