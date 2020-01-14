@@ -1,6 +1,6 @@
 name: AntiLoop
 main: knkiss.cn.AntiLoop
-version: "2.2"
+version: "2.3"
 author: Knkiss
 
 permissions:
