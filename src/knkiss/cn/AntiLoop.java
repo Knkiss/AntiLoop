@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -36,7 +37,10 @@ public class AntiLoop extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlaceBlock(BlockPlaceEvent e){
-        if(e.getPlayer().hasPermission("AntiLoop.bypass"))return;
+        if(e.getPlayer().hasPermission("AntiLoop.bypass")){
+            e.getPlayer().sendMessage("[AntiLoop] 由于你有[AntiLoop.bypass]权限，摆放回路不受限制");
+            return;
+        }
         if(!itemID.contains(e.getBlock().getTypeId()))return;
         itemGroup.forEach(group -> {
             if(group.check(e.getBlock(),e.getPlayer())){
@@ -48,7 +52,7 @@ public class AntiLoop extends JavaPlugin implements Listener {
     @EventHandler
     public void onBreakBlock(BlockBreakEvent e){
         if(!e.getPlayer().hasPermission("AntiLoop.check"))return;
-        if(!e.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.BOOK))return;
+        if(!e.getPlayer().getItemInHand().getType().equals(Material.BOOK))return;
         e.getPlayer().sendMessage("方块ID:" + e.getBlock().getTypeId()+" 子ID:"+e.getBlock().getData());
         e.setCancelled(true);
     }
@@ -57,22 +61,35 @@ public class AntiLoop extends JavaPlugin implements Listener {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(label.equalsIgnoreCase("antiloop")){
             if(!sender.hasPermission("AntiLoop.check")){
-                sender.sendMessage("你没有[AntiLoop.check]权限");
+                sender.sendMessage("[AntiLoop] 你没有[AntiLoop.check]权限");
                 return true;
             }
-            itemGroup.forEach(group -> {
-                sender.sendMessage("----------------------------------------");
-                sender.sendMessage("组名："+group.path);
-                sender.sendMessage("是否开启（配置无误）: " + group.enable);
-                sender.sendMessage("是否替换: " + group.isReplace);
-                for(ItemStack item:group.itemOld){
-                    sender.sendMessage("oldID:" + item.getTypeId() + "-子ID:" + item.getDurability());
+
+            if(args.length == 0){
+                itemGroup.forEach(group -> {
+                    sender.sendMessage("----------------------------------------");
+                    sender.sendMessage("组名："+group.path);
+                    sender.sendMessage("是否开启（配置无误）: " + group.enable);
+                    sender.sendMessage("是否替换: " + group.isReplace);
+                    for(ItemStack item:group.itemOld){
+                        sender.sendMessage("oldID:" + item.getTypeId() + "-子ID:" + item.getDurability());
+                    }
+                    if(group.isReplace){
+                        sender.sendMessage("newID:" + group.itemNew.getTypeId()+"-子ID:"+group.itemNew.getDurability());
+                    }
+                    sender.sendMessage("----------------------------------------");
+                });
+            }else{
+                if(args[0].equalsIgnoreCase("reload")){
+                    itemGroup.clear();
+                    itemID.clear();
+                    this.reloadConfig();
+                    config = this.getConfig();
+                    config.getKeys(false).forEach(path-> itemGroup.add(new Group(path)));
+                    this.getLogger().info("配置文件重载完毕");
+                    if(!(sender instanceof Player)) sender.sendMessage("[AntiLoop] 配置文件重载完毕");
                 }
-                if(group.isReplace){
-                    sender.sendMessage("newID:" + group.itemNew.getTypeId()+"-子ID:"+group.itemNew.getDurability());
-                }
-                sender.sendMessage("----------------------------------------");
-            });
+            }
         }
         return true;
     }
