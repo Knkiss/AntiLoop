@@ -37,14 +37,12 @@ public class AntiLoop extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlaceBlock(BlockPlaceEvent e){
-        if(e.getPlayer().hasPermission("AntiLoop.bypass")){
-            e.getPlayer().sendMessage("[AntiLoop] 由于你有[AntiLoop.bypass]权限，摆放回路不受限制");
-            return;
-        }
+        if(e.getPlayer().hasPermission("AntiLoop.bypass"))return;
         if(!itemID.contains(e.getBlock().getTypeId()))return;
         itemGroup.forEach(group -> {
             if(group.check(e.getBlock(),e.getPlayer())){
                 e.setCancelled(true);
+                e.getPlayer().sendMessage("[AntiLoop] 由于你缺少[AntiLoop.bypass]权限，摆放回路受到限制");
             }
         });
     }
